@@ -42,9 +42,15 @@ try {
     // Setup a base URI so that all generated URIs include the "tutorial" folder
     $di['url'] = function() {
         $url = new Url();
-        $url->setBaseUri('/tutorial/');
+        $url->setBaseUri('/');
         return $url;
     };
+
+    $di->set('router', function() {
+        $router = new \Phalcon\Mvc\Router();
+        $router->setUriSource(Phalcon\Mvc\Router::URI_SOURCE_SERVER_REQUEST_URI);
+        return $router;
+    });
 
     // Setup the tag helpers
     $di['tag'] = function() {
