@@ -26,9 +26,9 @@ try {
     $di['db'] = function() {
         return new DbAdapter(array(
             "host"     => "localhost",
-            "username" => "root",
-            "password" => "secret",
-            "dbname"   => "tutorial"
+            "username" => "vinh",
+            "password" => "vinh",
+            "dbname"   => "twitterapi"
         ));
     };
 

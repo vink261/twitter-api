@@ -49,3 +49,19 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2014-08-26 14:20:40
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `user_tweet_id`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_tweet_id` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user` varchar(70) NOT NULL,
+  `target` varchar(70) NOT NULL,
+  `last_tweet_id` varchar(70) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
