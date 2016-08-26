@@ -9,6 +9,9 @@ class Users extends Model
 
 	public $name;
 
-	public $email;
+	public $oauth_token;
+
+	public $oauth_token_secret;
+
 
 }

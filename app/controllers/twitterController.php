@@ -1,6 +1,7 @@
 <?php
 
 require "../vendor/autoload.php";
+require "../config/config.php";
 
 use Abraham\TwitterOAuth\TwitterOAuth;
 use Phalcon\Mvc\Controller;
@@ -9,7 +10,7 @@ define('CONSUMER_KEY', '3rJOl1ODzm9yZy63FACdg');
 define('CONSUMER_SECRET', '5jPoQ5kQvMJFDYRNE8bQ4rHuds4xJqhvgNJM4awaE8');
 
 
-class TwitterController extends Controller
+class TwitterController extends BaseController
 {
 	private $users;
 	private $password = "abcd1234";
@@ -26,14 +27,15 @@ class TwitterController extends Controller
 
 	}
 
-//	public function likeAction() {
-//		$data = $this->getTweetId();
-//		foreach ($this->users as $user) {
-//			$connection = $this->connectToApi($user);
-//			foreach ($data as $target => $ids) {
-//				foreach ($ids as $id) {
-//					while ($this->getLastTweetId($user,$target) < $id) {
-//						$connection->post("favorites/create", ["id" => $id]);
+	public function likeAction() {
+		$data = $this->getTweetId();
+		foreach ($this->users as $user) {
+			$connection = $this->connectToApi($user);
+			$last_id = $this->getLastTweetId($user,key($data));
+			foreach ($data as $target => $ids) {
+				foreach ($ids as $id) {
+					while ( $last_id < $id ) {
+						$connection->post("favorites/create", ["id" => $id]);
 //						if ($connection->getLastHttpCode() == 200) {
 //							// Like posted succesfully
 //							echo 'like done';
@@ -41,32 +43,32 @@ class TwitterController extends Controller
 //							// Handle error case
 //							echo 'like failed';
 //						}
-//					}
-//				}
-//				//save last tweet id for user and target
-//				$this->saveLastTweetId($user,$target,max($ids));
-//			}
-//		}
-//	}
-
-	public function likeAction() {
-		//get tweet_id
-		$tweet_ids = $this->getTweetId();
-		//retweet by each user
-		foreach ($this->users as $user) {
-			$connection = $this->connectToApi($user);
-			foreach ($tweet_ids as $id){
-				$connection->post("favorites/create", ["id" => $id]);
-				if ($connection->getLastHttpCode() == 200) {
-					// Tweet posted succesfully
-					echo 'like done';
-				} else {
-					// Handle error case
-					echo 'like failed';
+					}
 				}
+				//save last tweet id for user and target
+//				$this->saveLastTweetId($user,$target,max($ids));
 			}
 		}
 	}
+
+//	public function likeAction() {
+//		//get tweet_id
+//		$tweet_ids = $this->getTweetId();
+//		//retweet by each user
+//		foreach ($this->users as $user) {
+//			$connection = $this->connectToApi($user);
+//			foreach ($tweet_ids as $id){
+//				$connection->post("favorites/create", ["id" => $id]);
+//				if ($connection->getLastHttpCode() == 200) {
+//					// Tweet posted succesfully
+//					echo 'like done';
+//				} else {
+//					// Handle error case
+//					echo 'like failed';
+//				}
+//			}
+//		}
+//	}
 
 	public function retweetAction() {
 		//get tweet_id
@@ -94,7 +96,7 @@ class TwitterController extends Controller
 			foreach ($res as $tweet) {
 				if (empty($tweet->entities->user_mentions)) {
 					//for skip id to retweet or like
-					//$data[$target][] = $tweet->id_str;
+//					$data[$target][] = $tweet->id_str;
 
 					$data[] = $tweet->id_str;
 				}
@@ -105,12 +107,19 @@ class TwitterController extends Controller
 
 	public function saveLastTweetId($user, $target, $tweet_id) {
 		$data = new UserTweetId();
-		$data->last_tweet_id = $tweet_id;
-		if(	$data->findFirst("user = $user", "target = $target" )) {
+		$data->findFirst(
+			array(
+				"user = $user",
+				"target = $target"
+			)
+		);
+		if(!empty($data)) {
+			$data->last_tweet_id = $tweet_id;
 			$data->save();
 		} else {
 			$data->user = $user;
 			$data->target = $target;
+			$data->last_tweet_id = $tweet_id;
 			$data->create();
 		}
 	}
@@ -126,16 +135,34 @@ class TwitterController extends Controller
 	}
 
 	public function getLastTweetId($user, $target) {
-		$data = UserTweetId::findFirst([
-				"user = ?0 AND target = ?1",
-				'bind' =>[$user, $target]
-		]);
+		$data = UserTweetId::findFirst(
+			array(
+				"user = $user",
+				"target = $target"
+			)
+		);
 		return $data ? $data->last_tweet_id : 0;
 	}
 
 	public function connectToApi($user) {
-		$res = $this->getToken($user, $this->password);
+		$cacheKey = 'robots_order_id.cache';
+		$user_data   = $cache->get($cacheKey);
+
+		$user_data = Users::findFirstByName($user);
+		if (!empty($user_data)) {
+			$res = $user_data;
+		} else {
+			$res = $this->getToken($user, $this->password);
+			$user_data = new Users();
+			$user_data->name = $user;
+			$user_data->oauth_token = $res->oauth_token;
+			$user_data->oauth_token_secret = $res->oauth_token_secret;
+			$user_data->create();
+		}
+		$config = new Config();
+		print_r($config);exit;
 		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $res->oauth_token, $res->oauth_token_secret);
+
 		return $connection;
 	}
 
