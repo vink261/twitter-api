@@ -22,5 +22,9 @@ return new \Phalcon\Config(array(
         'libraryDir'     => __DIR__ . '/../../app/library/',
         'cacheDir'       => __DIR__ . '/../../app/cache/',
         'baseUri'        => '/',
-    )
+    ),
+
+    'file' => array(
+        'imagesDir' => __DIR__ . '/../../public/images',
+    ),
 ));

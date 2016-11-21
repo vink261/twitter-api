@@ -13,6 +13,8 @@ class UserTweetId extends Model
 
 	public $last_tweet_id;
 
+	public $last_like_id;
+
 	public function initialize() {
 		$this->useDynamicUpdate(true);
 	}
@@ -37,4 +39,8 @@ class UserTweetId extends Model
 		return $this->last_tweet_id;
 	}
 
+	public function getLastLikeId()
+	{
+		return $this->last_like_id;
+	}
 }
