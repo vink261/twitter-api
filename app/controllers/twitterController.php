@@ -29,7 +29,7 @@ class TwitterController extends Controller
 
 	public function getTargetUser()
 	{
-		$this->targets = array('tokiokichi202', 'misshit_201605');
+		$this->targets = array('tokiokichi202', 'VinkJun');
 		return $this->targets;
 	}
 
@@ -149,12 +149,12 @@ class TwitterController extends Controller
 		foreach ($this->targets as $target) {
 			$res = $connection->get("statuses/user_timeline", ["screen_name" => $target, "include_rts" => 1, "count" => 100]);
 			foreach ($res as $tweet) {
-				if (empty($tweet->entities->user_mentions)) {
+//				if (empty($tweet->entities->user_mentions)) {
 					//for skip id to retweet or like
 					$data[$target][] = $tweet->id_str;
 
 //					$data[] = $tweet->id_str;
-				}
+//				}
 			}
 		}
 		return $data;
@@ -275,5 +275,6 @@ class TwitterController extends Controller
 		$res = (object)$res;
 		return $res;
 	}
+
 
 }
